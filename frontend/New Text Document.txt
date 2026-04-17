@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Market Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+    padding: 20px;
+}
+
+input {
+    padding: 10px;
+    border-radius: 10px;
+}
+
+button {
+    padding: 10px;
+    border-radius: 10px;
+    background: blue;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.card {
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 15px;
+    margin-top: 20px;
+}
+
+.flex {
+    display: flex;
+    gap: 20px;
+}
+
+.metric {
+    flex: 1;
+    text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<h1>📊 Market Dashboard</h1>
+
+<input id="sector" placeholder="technology">
+<button onclick="analyze()">Analyze</button>
+
+<div class="flex">
+    <div class="card metric" id="growth">Growth: --</div>
+    <div class="card metric" id="risk">Risk: --</div>
+    <div class="card metric" id="demand">Demand: --</div>
+</div>
+
+<div class="flex">
+    <div class="card">
+        <canvas id="barChart"></canvas>
+    </div>
+
+    <div class="card">
+        <canvas id="lineChart"></canvas>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Insights</h3>
+    <ul id="insights"></ul>
+</div>
+
+<script>
+let barChart, lineChart;
+
+async function analyze() {
+    const sector = document.getElementById("sector").value;
+
+    const res = await fetch(`http://127.0.0.1:8000/analyze/${sector}`);
+    const data = await res.json();
+
+    console.log(data);
+
+    let g = data.growth || 0;
+    let r = data.risk || 0;
+    let d = data.demand || 0;
+
+    document.getElementById("growth").innerText = "Growth: " + g;
+    document.getElementById("risk").innerText = "Risk: " + r;
+    document.getElementById("demand").innerText = "Demand: " + d;
+
+    // Destroy old charts
+    if (barChart) barChart.destroy();
+    if (lineChart) lineChart.destroy();
+
+    // BAR CHART
+    barChart = new Chart(document.getElementById("barChart"), {
+        type: "bar",
+        data: {
+            labels: ["Growth", "Risk", "Demand"],
+            datasets: [{
+                data: [g, r, d],
+                backgroundColor: ["green", "blue", "cyan"]
+            }]
+        }
+    });
+
+    // LINE CHART
+    lineChart = new Chart(document.getElementById("lineChart"), {
+        type: "line",
+        data: {
+            labels: ["2019","2020","2021","2022","2023","2024"],
+            datasets: [{
+                data: [g+60, g+65, g+70, g+55, g+75, g+80],
+                borderColor: "lightblue",
+                fill: true
+            }]
+        }
+    });
+
+    // Insights
+    let ul = document.getElementById("insights");
+    ul.innerHTML = "";
+    data.insights.forEach(i => {
+        let li = document.createElement("li");
+        li.innerText = i;
+        ul.appendChild(li);
+    });
+}
+</script>
+
+</body>
+</html>
