@@ -4,6 +4,9 @@ import yfinance as yf
 
 # ✅ CREATE APP ONLY ONCE
 app = FastAPI()
+@app.get("/")
+def home():
+    return {"message": "API is running 🚀"}
 
 # ✅ CORS (VERY IMPORTANT)
 app.add_middleware(
